@@ -37,10 +37,7 @@ def _deepcopy_list(x):
 d[list] = _deepcopy_list
 
 def _deepcopy_dict(x):
-  y = {}
-  for key, value in x.iteritems():
-    y[deepcopy(key)] = deepcopy(value)
-  return y
+  return {deepcopy(key): deepcopy(value) for key, value in x.iteritems()}
 d[dict] = _deepcopy_dict
 
 del d

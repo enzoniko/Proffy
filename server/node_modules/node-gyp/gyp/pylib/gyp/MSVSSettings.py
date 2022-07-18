@@ -141,7 +141,7 @@ class _Boolean(_Type):
   """Boolean settings, can have the values 'false' or 'true'."""
 
   def _Validate(self, value):
-    if value != 'true' and value != 'false':
+    if value not in ['true', 'false']:
       raise ValueError('expected bool; got %r' % value)
 
   def ValidateMSVS(self, value):
@@ -171,7 +171,7 @@ class _Integer(_Type):
     int(value, self._msbuild_base)
 
   def ConvertToMSBuild(self, value):
-    msbuild_format = (self._msbuild_base == 10) and '%d' or '0x%04x'
+    msbuild_format = '%d' if self._msbuild_base == 10 else '0x%04x'
     return msbuild_format % int(value)
 
 
@@ -191,8 +191,7 @@ class _Enumeration(_Type):
   def __init__(self, label_list, new=None):
     _Type.__init__(self)
     self._label_list = label_list
-    self._msbuild_values = set(value for value in label_list
-                               if value is not None)
+    self._msbuild_values = {value for value in label_list if value is not None}
     if new is not None:
       self._msbuild_values.update(new)
 
@@ -202,7 +201,7 @@ class _Enumeration(_Type):
 
   def ValidateMSBuild(self, value):
     if value not in self._msbuild_values:
-      raise ValueError('unrecognized enumerated value %s' % value)
+      raise ValueError(f'unrecognized enumerated value {value}')
 
   def ConvertToMSBuild(self, value):
     index = int(value)
@@ -211,7 +210,7 @@ class _Enumeration(_Type):
                        (index, len(self._label_list)))
     label = self._label_list[index]
     if label is None:
-      raise ValueError('converted value for %s not specified.' % value)
+      raise ValueError(f'converted value for {value} not specified.')
     return label
 
 
@@ -337,10 +336,11 @@ def _ConvertedToAdditionalOption(tool, msvs_name, flag):
     if value == 'true':
       tool_settings = _GetMSBuildToolSettings(msbuild_settings, tool)
       if 'AdditionalOptions' in tool_settings:
-        new_flags = '%s %s' % (tool_settings['AdditionalOptions'], flag)
+        new_flags = f"{tool_settings['AdditionalOptions']} {flag}"
       else:
         new_flags = flag
       tool_settings['AdditionalOptions'] = new_flags
+
   _msvs_validators[tool.msvs_name][msvs_name] = _boolean.ValidateMSVS
   _msvs_to_msbuild_converters[tool.msvs_name][msvs_name] = _Translate
 
@@ -358,7 +358,8 @@ def _CustomGeneratePreprocessedFile(tool, msvs_name):
       tool_settings['PreprocessToFile'] = 'true'
       tool_settings['PreprocessSuppressLineNumbers'] = 'true'
     else:
-      raise ValueError('value must be one of [0, 1, 2]; got %s' % value)
+      raise ValueError(f'value must be one of [0, 1, 2]; got {value}')
+
   # Create a bogus validator that looks for '0', '1', or '2'
   msvs_validator = _Enumeration(['a', 'b', 'c']).ValidateMSVS
   _msvs_validators[tool.msvs_name][msvs_name] = msvs_validator

@@ -18,11 +18,15 @@ generator_filelist_paths = {
 }
 
 generator_default_variables = {
+    dirname: 'dir'
+    for dirname in [
+        'INTERMEDIATE_DIR',
+        'SHARED_INTERMEDIATE_DIR',
+        'PRODUCT_DIR',
+        'LIB_DIR',
+        'SHARED_LIB_DIR',
+    ]
 }
-for dirname in ['INTERMEDIATE_DIR', 'SHARED_INTERMEDIATE_DIR', 'PRODUCT_DIR',
-                'LIB_DIR', 'SHARED_LIB_DIR']:
-  # Some gyp steps fail if these are empty(!).
-  generator_default_variables[dirname] = 'dir'
 for unused in ['RULE_INPUT_PATH', 'RULE_INPUT_ROOT', 'RULE_INPUT_NAME',
                'RULE_INPUT_DIRNAME', 'RULE_INPUT_EXT',
                'EXECUTABLE_PREFIX', 'EXECUTABLE_SUFFIX',

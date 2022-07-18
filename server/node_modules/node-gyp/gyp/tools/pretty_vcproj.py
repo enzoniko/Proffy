@@ -12,6 +12,7 @@
    It outputs the resulting xml to stdout.
 """
 
+
 __author__ = 'nsylvain (Nicolas Sylvain)'
 
 import os
@@ -20,7 +21,7 @@ import sys
 from xml.dom.minidom import parse
 from xml.dom.minidom import Node
 
-REPLACEMENTS = dict()
+REPLACEMENTS = {}
 ARGUMENTS = None
 
 
@@ -191,10 +192,10 @@ def CleanupVcproj(node):
   # Insert the nodes in the correct order.
   for new_node in node_array:
     # But don't append empty tool node.
-    if new_node.nodeName == 'Tool':
-      if new_node.attributes and new_node.attributes.length == 1:
-        # This one was empty.
-        continue
+    if (new_node.nodeName == 'Tool' and new_node.attributes
+        and new_node.attributes.length == 1):
+      # This one was empty.
+      continue
     if new_node.nodeName == 'UserMacro':
       continue
     node.appendChild(new_node)
@@ -205,10 +206,8 @@ def GetConfiguationNodes(vcproj):
   nodes = []
   for node in vcproj.childNodes:
     if node.nodeName == "Configurations":
-      for sub_node in node.childNodes:
-        if sub_node.nodeName == "Configuration":
-          nodes.append(sub_node)
-
+      nodes.extend(sub_node for sub_node in node.childNodes
+                   if sub_node.nodeName == "Configuration")
   return nodes
 
 
@@ -250,8 +249,7 @@ def MergeAttributes(node1, node2):
     # Don't merge the 'Name' attribute.
     if name == 'Name':
       continue
-    value1 = node1.getAttribute(name)
-    if value1:
+    if value1 := node1.getAttribute(name):
       # The attribute exist in the main node. If it's equal, we leave it
       # untouched, otherwise we concatenate it.
       if value1 != value2:
@@ -269,8 +267,7 @@ def MergeAttributes(node1, node2):
 def MergeProperties(node1, node2):
   MergeAttributes(node1, node2)
   for child2 in node2.childNodes:
-    child1 = SeekToNode(node1, child2)
-    if child1:
+    if child1 := SeekToNode(node1, child2):
       MergeProperties(child1, child2)
     else:
       node1.appendChild(child2.cloneNode(True))

@@ -14,6 +14,7 @@ The expected usage is "gyp -f gypsh -D OS=desired_os".
 """
 
 
+
 import code
 import sys
 
@@ -34,10 +35,9 @@ _generator_identity_variables = [
 ]
 
 generator_default_variables = {
+    v: f'<({v})'
+    for v in _generator_identity_variables
 }
-
-for v in _generator_identity_variables:
-  generator_default_variables[v] = '<(%s)' % v
 
 
 def GenerateOutput(target_list, target_dicts, data, params):

@@ -25,14 +25,13 @@ def _FindCommandInPath(command):
     # If the command already has path elements (either relative or
     # absolute), then assume it is constructed properly.
     return command
-  else:
-    # Search through the path list and find an existing file that
-    # we can access.
-    paths = os.environ.get('PATH','').split(os.pathsep)
-    for path in paths:
-      item = os.path.join(path, command)
-      if os.path.isfile(item) and os.access(item, os.X_OK):
-        return item
+  # Search through the path list and find an existing file that
+  # we can access.
+  paths = os.environ.get('PATH','').split(os.pathsep)
+  for path in paths:
+    item = os.path.join(path, command)
+    if os.path.isfile(item) and os.access(item, os.X_OK):
+      return item
   return command
 
 def _QuoteWin32CommandLineArgs(args):
@@ -135,9 +134,8 @@ class Writer(object):
   def WriteIfChanged(self):
     """Writes the user file."""
     configs = ['Configurations']
-    for config, spec in sorted(self.configurations.iteritems()):
-      configs.append(spec)
-
+    configs.extend(
+        spec for config, spec in sorted(self.configurations.iteritems()))
     content = ['VisualStudioUserFile',
                {'Version': self.version.ProjectVersion(),
                 'Name': self.name

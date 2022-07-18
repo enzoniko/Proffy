@@ -32,15 +32,12 @@ def mask_comments(input):
 
 
 def quote_replace(matchobj):
-  return "%s%s%s%s" % (matchobj.group(1),
-                       matchobj.group(2),
-                       'x'*len(matchobj.group(3)),
-                       matchobj.group(2))
+  return f"{matchobj.group(1)}{matchobj.group(2)}{'x' * len(matchobj.group(3))}{matchobj.group(2)}"
 
 
 def mask_quotes(input):
   """Mask the quoted strings so we skip braces inside quoted strings."""
-  search_re = re.compile(r'(.*?)' + QUOTE_RE_STR)
+  search_re = re.compile(f'(.*?){QUOTE_RE_STR}')
   return [search_re.sub(quote_replace, line) for line in input]
 
 
@@ -48,12 +45,10 @@ def do_split(input, masked_input, search_re):
   output = []
   mask_output = []
   for (line, masked_line) in zip(input, masked_input):
-    m = search_re.match(masked_line)
-    while m:
+    while m := search_re.match(masked_line):
       split = len(m.group(1))
       line = line[:split] + r'\n' + line[split:]
       masked_line = masked_line[:split] + r'\n' + masked_line[split:]
-      m = search_re.match(masked_line)
     output.extend(line.split(r'\n'))
     mask_output.extend(masked_line.split(r'\n'))
   return (output, mask_output)

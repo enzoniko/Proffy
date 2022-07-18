@@ -31,10 +31,10 @@ def BuildProject(project, built, projects, deps):
 
 def ParseSolution(solution_file):
   # All projects, their clsid and paths.
-  projects = dict()
+  projects = {}
 
   # A list of dependencies associated with a project.
-  dependencies = dict()
+  dependencies = {}
 
   # Regular expressions that matches the SLN format.
   # The first line of a project definition.
@@ -56,13 +56,15 @@ def ParseSolution(solution_file):
     results = begin_project.search(line)
     if results:
       # Hack to remove icu because the diff is too different.
-      if results.group(1).find('icu') != -1:
+      if results[1].find('icu') != -1:
         continue
       # We remove "_gyp" from the names because it helps to diff them.
-      current_project = results.group(1).replace('_gyp', '')
-      projects[current_project] = [results.group(2).replace('_gyp', ''),
-                                   results.group(3),
-                                   results.group(2)]
+      current_project = results[1].replace('_gyp', '')
+      projects[current_project] = [
+          results[2].replace('_gyp', ''),
+          results[3],
+          results[2],
+      ]
       dependencies[current_project] = []
       continue
 
@@ -83,18 +85,18 @@ def ParseSolution(solution_file):
 
     results = dep_line.search(line)
     if results and in_deps and current_project:
-      dependencies[current_project].append(results.group(1))
+      dependencies[current_project].append(results[1])
       continue
 
   # Change all dependencies clsid to name instead.
-  for project in dependencies:
+  for project, value in dependencies.items():
     # For each dependencies in this project
     new_dep_array = []
-    for dep in dependencies[project]:
+    for dep in value:
       # Look for the project name matching this cldis
-      for project_info in projects:
-        if projects[project_info][1] == dep:
-          new_dep_array.append(project_info)
+      new_dep_array.extend(project_info
+                           for project_info, value_ in projects.items()
+                           if value_[1] == dep)
     dependencies[project] = sorted(new_dep_array)
 
   return (projects, dependencies)
